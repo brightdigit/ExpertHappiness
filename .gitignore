@@ -60,3 +60,26 @@ fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
+
+# Swift Package Manager / tooling
+.build/
+.swiftpm/
+.index-build/
+Scripts/OpenAPITools/.build/
+
+# Secrets: App Store Connect API keys never belong in the repo
+.env
+.env.*
+!.env.example
+/Keys/
+*.p8
+*.pem
+*.key
+*.p12
+
+# Downloaded analytics report data
+/Reports/
+
+# Claude Code local state
+.claude/settings.local.json
+.claude/worktrees/
