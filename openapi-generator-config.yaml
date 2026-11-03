@@ -16,3 +16,4 @@ filter:
     - analyticsReportRequests_reports_getToManyRelated
     - analyticsReports_instances_getToManyRelated
     - analyticsReportInstances_segments_getToManyRelated
+    - financeReports_getCollection

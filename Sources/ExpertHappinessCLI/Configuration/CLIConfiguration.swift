@@ -47,6 +47,9 @@ internal struct CLIConfiguration: ConfigurationParseable {
   internal let output: URL
   internal let access: String
   internal let report: String?
+  internal let vendorNumber: String?
+  internal let fromMonth: String?
+  internal let toMonth: String?
 
   internal init(configuration: ConfigReader, base: Never?) async throws {
     keyID = configuration.read(ConfigurationKeys.keyID)
@@ -61,6 +64,9 @@ internal struct CLIConfiguration: ConfigurationParseable {
     output = URL(fileURLWithPath: configuration.read(ConfigurationKeys.output))
     access = configuration.read(ConfigurationKeys.access)
     report = configuration.read(ConfigurationKeys.report)
+    vendorNumber = configuration.read(ConfigurationKeys.vendorNumber)
+    fromMonth = configuration.read(ConfigurationKeys.fromMonth)
+    toMonth = configuration.read(ConfigurationKeys.toMonth)
   }
 
   /// Reads the configuration from, in order of precedence: command-line

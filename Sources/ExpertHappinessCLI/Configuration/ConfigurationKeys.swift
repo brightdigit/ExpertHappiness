@@ -53,6 +53,12 @@ internal enum ConfigurationKeys {
   internal static let access = ConfigKey<String>(cli: "access", default: "both")
   internal static let report = OptionalConfigKey<String>(cli: "report")
   internal static let envFile = ConfigKey<String>(cli: "env-file", default: ".env")
+  internal static let vendorNumber = OptionalConfigKey<String>(
+    cli: "vendor",
+    env: "ASC_VENDOR_NUMBER"
+  )
+  internal static let fromMonth = OptionalConfigKey<String>(cli: "from-month")
+  internal static let toMonth = OptionalConfigKey<String>(cli: "to-month")
 
   /// Flags whose values are redacted from logs.
   internal static let secretCommandLineFlags: Set<String> = [

@@ -39,6 +39,7 @@ internal enum CommandRunner {
     await registry.register(StatusCommand.self)
     await registry.register(DownloadCommand.self)
     await registry.register(SummaryCommand.self)
+    await registry.register(FinanceCommand.self)
 
     let parser = CommandLineParser()
     guard let name = parser.parseCommandName(), name != "help" else {

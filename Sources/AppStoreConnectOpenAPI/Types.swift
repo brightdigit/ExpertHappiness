@@ -22,6 +22,9 @@ public protocol APIProtocol: Sendable {
     /// - Remark: HTTP `GET /v1/apps`.
     /// - Remark: Generated from `#/paths//v1/apps/get(apps_getCollection)`.
     func apps_getCollection(_ input: Operations.apps_getCollection.Input) async throws -> Operations.apps_getCollection.Output
+    /// - Remark: HTTP `GET /v1/financeReports`.
+    /// - Remark: Generated from `#/paths//v1/financeReports/get(financeReports_getCollection)`.
+    func financeReports_getCollection(_ input: Operations.financeReports_getCollection.Input) async throws -> Operations.financeReports_getCollection.Output
     /// - Remark: HTTP `GET /v1/analyticsReportInstances/{id}/segments`.
     /// - Remark: Generated from `#/paths//v1/analyticsReportInstances/{id}/segments/get(analyticsReportInstances_segments_getToManyRelated)`.
     func analyticsReportInstances_segments_getToManyRelated(_ input: Operations.analyticsReportInstances_segments_getToManyRelated.Input) async throws -> Operations.analyticsReportInstances_segments_getToManyRelated.Output
@@ -69,6 +72,17 @@ extension APIProtocol {
         headers: Operations.apps_getCollection.Input.Headers = .init()
     ) async throws -> Operations.apps_getCollection.Output {
         try await apps_getCollection(Operations.apps_getCollection.Input(
+            query: query,
+            headers: headers
+        ))
+    }
+    /// - Remark: HTTP `GET /v1/financeReports`.
+    /// - Remark: Generated from `#/paths//v1/financeReports/get(financeReports_getCollection)`.
+    public func financeReports_getCollection(
+        query: Operations.financeReports_getCollection.Input.Query,
+        headers: Operations.financeReports_getCollection.Input.Headers = .init()
+    ) async throws -> Operations.financeReports_getCollection.Output {
+        try await financeReports_getCollection(Operations.financeReports_getCollection.Input(
             query: query,
             headers: headers
         ))
@@ -11814,6 +11828,8 @@ public enum Components {
             case V1 = "V1"
             case V2 = "V2"
         }
+        /// - Remark: Generated from `#/components/schemas/gzip`.
+        public typealias gzip = OpenAPIRuntime.HTTPBody
     }
     /// Types generated from the `#/components/parameters` section of the OpenAPI document.
     public enum Parameters {}
@@ -13965,6 +13981,374 @@ public enum Operations {
             public static var allCases: [Self] {
                 [
                     .json
+                ]
+            }
+        }
+    }
+    /// - Remark: HTTP `GET /v1/financeReports`.
+    /// - Remark: Generated from `#/paths//v1/financeReports/get(financeReports_getCollection)`.
+    public enum financeReports_getCollection {
+        public static let id: Swift.String = "financeReports_getCollection"
+        public struct Input: Sendable, Hashable {
+            /// - Remark: Generated from `#/paths/v1/financeReports/GET/query`.
+            public struct Query: Sendable, Hashable {
+                /// filter by attribute 'vendorNumber'
+                ///
+                /// - Remark: Generated from `#/paths/v1/financeReports/GET/query/filter[vendorNumber]`.
+                public var filter_lbrack_vendorNumber_rbrack_: [Swift.String]
+                /// - Remark: Generated from `#/paths/v1/financeReports/GET/query/filter_lbrack_reportType_rbrack_Payload`.
+                @frozen public enum filter_lbrack_reportType_rbrack_PayloadPayload: String, Codable, Hashable, Sendable, CaseIterable {
+                    case FINANCIAL = "FINANCIAL"
+                    case FINANCE_DETAIL = "FINANCE_DETAIL"
+                }
+                /// - Remark: Generated from `#/paths/v1/financeReports/GET/query/filter[reportType]`.
+                public typealias filter_lbrack_reportType_rbrack_Payload = [Operations.financeReports_getCollection.Input.Query.filter_lbrack_reportType_rbrack_PayloadPayload]
+                /// filter by attribute 'reportType'
+                ///
+                /// - Remark: Generated from `#/paths/v1/financeReports/GET/query/filter[reportType]`.
+                public var filter_lbrack_reportType_rbrack_: Operations.financeReports_getCollection.Input.Query.filter_lbrack_reportType_rbrack_Payload
+                /// filter by attribute 'regionCode'
+                ///
+                /// - Remark: Generated from `#/paths/v1/financeReports/GET/query/filter[regionCode]`.
+                public var filter_lbrack_regionCode_rbrack_: [Swift.String]
+                /// filter by attribute 'reportDate'
+                ///
+                /// - Remark: Generated from `#/paths/v1/financeReports/GET/query/filter[reportDate]`.
+                public var filter_lbrack_reportDate_rbrack_: [Swift.String]
+                /// Creates a new `Query`.
+                ///
+                /// - Parameters:
+                ///   - filter_lbrack_vendorNumber_rbrack_: filter by attribute 'vendorNumber'
+                ///   - filter_lbrack_reportType_rbrack_: filter by attribute 'reportType'
+                ///   - filter_lbrack_regionCode_rbrack_: filter by attribute 'regionCode'
+                ///   - filter_lbrack_reportDate_rbrack_: filter by attribute 'reportDate'
+                public init(
+                    filter_lbrack_vendorNumber_rbrack_: [Swift.String],
+                    filter_lbrack_reportType_rbrack_: Operations.financeReports_getCollection.Input.Query.filter_lbrack_reportType_rbrack_Payload,
+                    filter_lbrack_regionCode_rbrack_: [Swift.String],
+                    filter_lbrack_reportDate_rbrack_: [Swift.String]
+                ) {
+                    self.filter_lbrack_vendorNumber_rbrack_ = filter_lbrack_vendorNumber_rbrack_
+                    self.filter_lbrack_reportType_rbrack_ = filter_lbrack_reportType_rbrack_
+                    self.filter_lbrack_regionCode_rbrack_ = filter_lbrack_regionCode_rbrack_
+                    self.filter_lbrack_reportDate_rbrack_ = filter_lbrack_reportDate_rbrack_
+                }
+            }
+            public var query: Operations.financeReports_getCollection.Input.Query
+            /// - Remark: Generated from `#/paths/v1/financeReports/GET/header`.
+            public struct Headers: Sendable, Hashable {
+                public var accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.financeReports_getCollection.AcceptableContentType>]
+                /// Creates a new `Headers`.
+                ///
+                /// - Parameters:
+                ///   - accept:
+                public init(accept: [OpenAPIRuntime.AcceptHeaderContentType<Operations.financeReports_getCollection.AcceptableContentType>] = .defaultValues()) {
+                    self.accept = accept
+                }
+            }
+            public var headers: Operations.financeReports_getCollection.Input.Headers
+            /// Creates a new `Input`.
+            ///
+            /// - Parameters:
+            ///   - query:
+            ///   - headers:
+            public init(
+                query: Operations.financeReports_getCollection.Input.Query,
+                headers: Operations.financeReports_getCollection.Input.Headers = .init()
+            ) {
+                self.query = query
+                self.headers = headers
+            }
+        }
+        @frozen public enum Output: Sendable, Hashable {
+            public struct BadRequest: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/v1/financeReports/GET/responses/400/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/v1/financeReports/GET/responses/400/content/application\/json`.
+                    case json(Components.Schemas.ErrorResponse)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: Components.Schemas.ErrorResponse {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.financeReports_getCollection.Output.BadRequest.Body
+                /// Creates a new `BadRequest`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.financeReports_getCollection.Output.BadRequest.Body) {
+                    self.body = body
+                }
+            }
+            /// Parameter error(s)
+            ///
+            /// - Remark: Generated from `#/paths//v1/financeReports/get(financeReports_getCollection)/responses/400`.
+            ///
+            /// HTTP response code: `400 badRequest`.
+            case badRequest(Operations.financeReports_getCollection.Output.BadRequest)
+            /// The associated value of the enum case if `self` is `.badRequest`.
+            ///
+            /// - Throws: An error if `self` is not `.badRequest`.
+            /// - SeeAlso: `.badRequest`.
+            public var badRequest: Operations.financeReports_getCollection.Output.BadRequest {
+                get throws {
+                    switch self {
+                    case let .badRequest(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "badRequest",
+                            response: self
+                        )
+                    }
+                }
+            }
+            public struct Unauthorized: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/v1/financeReports/GET/responses/401/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/v1/financeReports/GET/responses/401/content/application\/json`.
+                    case json(Components.Schemas.ErrorResponse)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: Components.Schemas.ErrorResponse {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.financeReports_getCollection.Output.Unauthorized.Body
+                /// Creates a new `Unauthorized`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.financeReports_getCollection.Output.Unauthorized.Body) {
+                    self.body = body
+                }
+            }
+            /// Unauthorized error(s)
+            ///
+            /// - Remark: Generated from `#/paths//v1/financeReports/get(financeReports_getCollection)/responses/401`.
+            ///
+            /// HTTP response code: `401 unauthorized`.
+            case unauthorized(Operations.financeReports_getCollection.Output.Unauthorized)
+            /// The associated value of the enum case if `self` is `.unauthorized`.
+            ///
+            /// - Throws: An error if `self` is not `.unauthorized`.
+            /// - SeeAlso: `.unauthorized`.
+            public var unauthorized: Operations.financeReports_getCollection.Output.Unauthorized {
+                get throws {
+                    switch self {
+                    case let .unauthorized(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "unauthorized",
+                            response: self
+                        )
+                    }
+                }
+            }
+            public struct Forbidden: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/v1/financeReports/GET/responses/403/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/v1/financeReports/GET/responses/403/content/application\/json`.
+                    case json(Components.Schemas.ErrorResponse)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: Components.Schemas.ErrorResponse {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.financeReports_getCollection.Output.Forbidden.Body
+                /// Creates a new `Forbidden`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.financeReports_getCollection.Output.Forbidden.Body) {
+                    self.body = body
+                }
+            }
+            /// Forbidden error
+            ///
+            /// - Remark: Generated from `#/paths//v1/financeReports/get(financeReports_getCollection)/responses/403`.
+            ///
+            /// HTTP response code: `403 forbidden`.
+            case forbidden(Operations.financeReports_getCollection.Output.Forbidden)
+            /// The associated value of the enum case if `self` is `.forbidden`.
+            ///
+            /// - Throws: An error if `self` is not `.forbidden`.
+            /// - SeeAlso: `.forbidden`.
+            public var forbidden: Operations.financeReports_getCollection.Output.Forbidden {
+                get throws {
+                    switch self {
+                    case let .forbidden(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "forbidden",
+                            response: self
+                        )
+                    }
+                }
+            }
+            public struct Ok: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/v1/financeReports/GET/responses/200/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/v1/financeReports/GET/responses/200/content/application\/a-gzip`.
+                    case application_a_hyphen_gzip(OpenAPIRuntime.HTTPBody)
+                    /// The associated value of the enum case if `self` is `.application_a_hyphen_gzip`.
+                    ///
+                    /// - Throws: An error if `self` is not `.application_a_hyphen_gzip`.
+                    /// - SeeAlso: `.application_a_hyphen_gzip`.
+                    public var application_a_hyphen_gzip: OpenAPIRuntime.HTTPBody {
+                        get throws {
+                            switch self {
+                            case let .application_a_hyphen_gzip(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.financeReports_getCollection.Output.Ok.Body
+                /// Creates a new `Ok`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.financeReports_getCollection.Output.Ok.Body) {
+                    self.body = body
+                }
+            }
+            /// List of FinanceReports
+            ///
+            /// - Remark: Generated from `#/paths//v1/financeReports/get(financeReports_getCollection)/responses/200`.
+            ///
+            /// HTTP response code: `200 ok`.
+            case ok(Operations.financeReports_getCollection.Output.Ok)
+            /// The associated value of the enum case if `self` is `.ok`.
+            ///
+            /// - Throws: An error if `self` is not `.ok`.
+            /// - SeeAlso: `.ok`.
+            public var ok: Operations.financeReports_getCollection.Output.Ok {
+                get throws {
+                    switch self {
+                    case let .ok(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "ok",
+                            response: self
+                        )
+                    }
+                }
+            }
+            public struct TooManyRequests: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/v1/financeReports/GET/responses/429/content`.
+                @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/v1/financeReports/GET/responses/429/content/application\/json`.
+                    case json(Components.Schemas.ErrorResponse)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    public var json: Components.Schemas.ErrorResponse {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                public var body: Operations.financeReports_getCollection.Output.TooManyRequests.Body
+                /// Creates a new `TooManyRequests`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                public init(body: Operations.financeReports_getCollection.Output.TooManyRequests.Body) {
+                    self.body = body
+                }
+            }
+            /// Rate limit exceeded error
+            ///
+            /// - Remark: Generated from `#/paths//v1/financeReports/get(financeReports_getCollection)/responses/429`.
+            ///
+            /// HTTP response code: `429 tooManyRequests`.
+            case tooManyRequests(Operations.financeReports_getCollection.Output.TooManyRequests)
+            /// The associated value of the enum case if `self` is `.tooManyRequests`.
+            ///
+            /// - Throws: An error if `self` is not `.tooManyRequests`.
+            /// - SeeAlso: `.tooManyRequests`.
+            public var tooManyRequests: Operations.financeReports_getCollection.Output.TooManyRequests {
+                get throws {
+                    switch self {
+                    case let .tooManyRequests(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "tooManyRequests",
+                            response: self
+                        )
+                    }
+                }
+            }
+            /// Undocumented response.
+            ///
+            /// A response with a code that is not documented in the OpenAPI document.
+            case undocumented(statusCode: Swift.Int, OpenAPIRuntime.UndocumentedPayload)
+        }
+        @frozen public enum AcceptableContentType: AcceptableProtocol {
+            case json
+            case application_a_hyphen_gzip
+            case other(Swift.String)
+            public init?(rawValue: Swift.String) {
+                switch rawValue.lowercased() {
+                case "application/json":
+                    self = .json
+                case "application/a-gzip":
+                    self = .application_a_hyphen_gzip
+                default:
+                    self = .other(rawValue)
+                }
+            }
+            public var rawValue: Swift.String {
+                switch self {
+                case let .other(string):
+                    return string
+                case .json:
+                    return "application/json"
+                case .application_a_hyphen_gzip:
+                    return "application/a-gzip"
+                }
+            }
+            public static var allCases: [Self] {
+                [
+                    .json,
+                    .application_a_hyphen_gzip
                 ]
             }
         }

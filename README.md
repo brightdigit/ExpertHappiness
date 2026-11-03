@@ -57,6 +57,7 @@ swift run expert-happiness summary  --app com.example.App --from 2026-09-27 --to
 
 - `download` saves `Reports/<bundle ID>/<report>/<processing date>-<segment>.tsv`. It fetches processing dates through `--to` plus 5 days, because Apple sometimes restates a day after the fact. Files already on disk are skipped.
 - `summary` works offline from those files. It counts each restated day once, using the latest processing date. "Unique Counts" are summed per day, so across a range they overstate unique devices.
+- `finance` downloads monthly finance reports (Admin or Finance key, plus `ASC_VENDOR_NUMBER`) to `Reports/finance/<yyyy-MM>.tsv` and prints proceeds per month, product and currency. With no flags it covers the last 12 complete months, and months already on disk aren't downloaded again.
 - Add `--report "<name contains>"` to `status` or `download` to work with a report outside the standard set.
 
 ## Development
