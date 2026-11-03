@@ -48,6 +48,7 @@ internal struct CLIConfiguration: ConfigurationParseable {
   internal let access: String
   internal let report: String?
   internal let vendorNumber: String?
+  internal let summaries: SummaryConfiguration?
   internal let fromMonth: String?
   internal let toMonth: String?
 
@@ -65,6 +66,11 @@ internal struct CLIConfiguration: ConfigurationParseable {
     access = configuration.read(ConfigurationKeys.access)
     report = configuration.read(ConfigurationKeys.report)
     vendorNumber = configuration.read(ConfigurationKeys.vendorNumber)
+    summaries = try configuration.read(ConfigurationKeys.summaryConfig).map { path in
+      try SummaryConfiguration.load(
+        from: URL(fileURLWithPath: (path as NSString).expandingTildeInPath)
+      )
+    }
     fromMonth = configuration.read(ConfigurationKeys.fromMonth)
     toMonth = configuration.read(ConfigurationKeys.toMonth)
   }

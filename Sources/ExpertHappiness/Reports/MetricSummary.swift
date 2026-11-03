@@ -58,7 +58,10 @@ public struct MetricSummary: Sendable, Equatable {
   public init(spec: SummarySpec, reportName: String, table: ReportTable) {
     let present = Set(table.columns)
     let groupColumns = spec.groupBy.filter(present.contains)
-    let valueColumns = spec.values.filter(present.contains)
+    let valueColumns =
+      spec.values.isEmpty
+      ? Self.numericColumns(of: table, excluding: Set(groupColumns))
+      : spec.values.filter(present.contains)
     var sourceRows = table.rows
     if spec.latestDateOnly,
       let latest = sourceRows.compactMap({ $0[ReportArchive.dateColumn] }).max()
@@ -84,6 +87,20 @@ public struct MetricSummary: Sendable, Equatable {
     self.missingColumns =
       spec.groupBy.filter { !present.contains($0) } + (valueColumns.isEmpty ? spec.values : [])
     self.sourceRowCount = sourceRows.count
+  }
+
+  /// Columns whose non-empty values all parse as numbers, other than the
+  /// date column, the group-by columns and ID-like columns.
+  private static func numericColumns(of table: ReportTable, excluding: Set<String>) -> [String] {
+    table.columns.filter { column in
+      guard column != ReportArchive.dateColumn, !excluding.contains(column),
+        !column.hasSuffix("ID"), !column.localizedCaseInsensitiveContains("identifier")
+      else {
+        return false
+      }
+      let values = table.rows.compactMap { $0[column] }.filter { !$0.isEmpty }
+      return !values.isEmpty && values.allSatisfy { Double($0) != nil }
+    }
   }
 
   /// The summary as a Markdown table, ready to paste into notes.

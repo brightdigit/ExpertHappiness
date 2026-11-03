@@ -39,11 +39,15 @@ internal struct SummaryCommand: ExpertHappinessCommand {
 
     USAGE:
       expert-happiness summary --app <bundle ID> [--from 2026-09-27] [--to 2026-11-02]
-        [--output Reports]
+        [--output Reports] [--summary-config <file>]
 
     Works offline from the files `download` saved. Restated days count once,
     from the latest processing date. Unique counts are summed per day, so
     they overstate unique devices across a range.
+
+    With --summary-config (or ASC_SUMMARY_CONFIG), prints the summaries that
+    file defines. Without it, prints one table per downloaded report with
+    every numeric column totaled.
     """
 
   private let config: CLIConfiguration
@@ -64,7 +68,9 @@ internal struct SummaryCommand: ExpertHappinessCommand {
     }
     print("## \(app): \(config.range.start) to \(config.range.end)\n")
     print("_App Store Connect analytics exclude watchOS downloads and usage._\n")
-    for spec in SummarySpec.standard {
+    let specs =
+      config.summaries?.summaries ?? names.map { SummarySpec.allNumericColumns(of: $0) }
+    for spec in specs {
       let matching = names.filter { spec.matches(reportName: $0) }
       if matching.isEmpty {
         print("### \(spec.title)\n\nNo downloaded report matches \"\(spec.reportNameContains)\".\n")

@@ -57,6 +57,10 @@ internal enum ConfigurationKeys {
     cli: "vendor",
     env: "ASC_VENDOR_NUMBER"
   )
+  internal static let summaryConfig = OptionalConfigKey<String>(
+    cli: "summary-config",
+    env: "ASC_SUMMARY_CONFIG"
+  )
   internal static let fromMonth = OptionalConfigKey<String>(cli: "from-month")
   internal static let toMonth = OptionalConfigKey<String>(cli: "to-month")
 

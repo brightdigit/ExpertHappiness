@@ -39,11 +39,15 @@ internal struct DownloadCommand: ExpertHappinessCommand {
 
     USAGE:
       expert-happiness download --app <id or bundle ID> [--from 2026-09-27] [--to 2026-11-02]
-        [--output Reports] [--report <name contains>]
+        [--output Reports] (--report <name contains> | --summary-config <file>)
 
     Saves Reports/<bundle ID>/<report>/<processing date>-<segment>.tsv. Fetches
     processing dates through --to plus 5 days, because Apple can restate a
     day later. Files already on disk are skipped.
+
+    Choose reports with --report (name contains), or with --summary-config to
+    fetch every report the summaries use. One of them is required, since an
+    app has well over 100 reports.
     """
 
   private let config: CLIConfiguration
@@ -53,6 +57,11 @@ internal struct DownloadCommand: ExpertHappinessCommand {
   }
 
   internal func execute() async throws {
+    guard config.report?.isEmpty == false || config.summaries != nil else {
+      throw CLIError.missing(
+        "--report <name contains> or --summary-config <file> (ASC_SUMMARY_CONFIG)"
+      )
+    }
     let service = try config.makeService()
     let app = try await service.app(matching: config.requireApp())
     let archive = ReportArchive(root: config.output)
@@ -62,7 +71,7 @@ internal struct DownloadCommand: ExpertHappinessCommand {
     var skipped = 0
     for request in try await service.reportRequests(appID: app.id) {
       let reports = try await service.reports(requestID: request.id)
-      for report in reports where ReportSelection.includes(report, filter: config.report) {
+      for report in reports where ReportSelection.includes(report, config: config) == true {
         let instances = try await service.instances(reportID: report.id, processingDates: dates)
         for instance in instances {
           for segment in try await service.segments(instanceID: instance.id) {

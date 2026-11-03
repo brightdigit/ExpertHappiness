@@ -30,10 +30,19 @@
 /// How to total one analytics report: which report, which columns to group
 /// by and which numeric columns to sum.
 ///
-/// Column names come from Apple's report documentation. Candidates are tried
-/// in order, and a missing column is reported rather than guessed, so a
-/// renamed column shows up in the summary output.
-public struct SummarySpec: Sendable, Equatable {
+/// Specs are usually decoded from a JSON file (see ``SummaryConfiguration``).
+/// Missing columns are reported rather than guessed, so a renamed column
+/// shows up in the summary output.
+public struct SummarySpec: Sendable, Equatable, Codable {
+  private enum CodingKeys: String, CodingKey {
+    case title
+    case reportNameContains
+    case reportNameExcludes
+    case groupBy
+    case values
+    case latestDateOnly
+  }
+
   /// A short title for the summary table.
   public let title: String
   /// Text the report name must contain (case-insensitive).
@@ -42,7 +51,8 @@ public struct SummarySpec: Sendable, Equatable {
   public let reportNameExcludes: String?
   /// Columns to group rows by. Missing ones are skipped.
   public let groupBy: [String]
-  /// Numeric columns to sum. Missing ones are skipped.
+  /// Numeric columns to sum. Missing ones are skipped. Empty means every
+  /// column whose values are all numbers.
   public let values: [String]
   /// When true, only the latest data date in range is totaled. Use this for
   /// point-in-time counts like subscription states.
@@ -52,9 +62,9 @@ public struct SummarySpec: Sendable, Equatable {
   public init(
     title: String,
     reportNameContains: String,
-    reportNameExcludes: String? = "Detailed",
-    groupBy: [String],
-    values: [String],
+    reportNameExcludes: String? = nil,
+    groupBy: [String] = [],
+    values: [String] = [],
     latestDateOnly: Bool = false
   ) {
     self.title = title
@@ -63,6 +73,19 @@ public struct SummarySpec: Sendable, Equatable {
     self.groupBy = groupBy
     self.values = values
     self.latestDateOnly = latestDateOnly
+  }
+
+  /// Decodes a spec. Only `title` and `reportNameContains` are required.
+  public init(from decoder: any Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    self.init(
+      title: try container.decode(String.self, forKey: .title),
+      reportNameContains: try container.decode(String.self, forKey: .reportNameContains),
+      reportNameExcludes: try container.decodeIfPresent(String.self, forKey: .reportNameExcludes),
+      groupBy: try container.decodeIfPresent([String].self, forKey: .groupBy) ?? [],
+      values: try container.decodeIfPresent([String].self, forKey: .values) ?? [],
+      latestDateOnly: try container.decodeIfPresent(Bool.self, forKey: .latestDateOnly) ?? false
+    )
   }
 
   /// Whether a report name matches this spec.
@@ -76,44 +99,4 @@ public struct SummarySpec: Sendable, Equatable {
     }
     return true
   }
-}
-
-extension SummarySpec {
-  /// The reports the SPARK numbers need: discovery, downloads, purchases and
-  /// subscriptions.
-  public static let standard: [SummarySpec] = [
-    SummarySpec(
-      title: "Impressions and page views by source",
-      reportNameContains: "Discovery and Engagement",
-      groupBy: ["Event", "Source Type"],
-      values: ["Counts", "Unique Counts"]
-    ),
-    SummarySpec(
-      title: "Downloads by type and source",
-      reportNameContains: "App Downloads",
-      groupBy: ["Download Type", "Source Type"],
-      values: ["Counts"]
-    ),
-    SummarySpec(
-      title: "Purchases and proceeds (estimated)",
-      reportNameContains: "App Store Purchases",
-      groupBy: ["Purchase Type"],
-      values: ["Purchases", "Proceeds in USD", "Sales in USD"]
-    ),
-    SummarySpec(
-      title: "Subscription states (latest day in range)",
-      reportNameContains: "Subscription State",
-      reportNameExcludes: nil,
-      groupBy: ["State Metric"],
-      values: ["Counts", "Count", "Subscriptions"],
-      latestDateOnly: true
-    ),
-    SummarySpec(
-      title: "Subscription events",
-      reportNameContains: "Subscription Event",
-      reportNameExcludes: nil,
-      groupBy: ["Event Grouping", "Event Sub Type"],
-      values: ["Counts", "Count", "Quantity"]
-    ),
-  ]
 }

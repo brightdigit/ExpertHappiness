@@ -37,11 +37,11 @@ internal struct StatusCommand: ExpertHappinessCommand {
     STATUS - Show report requests and reports for an app
 
     USAGE:
-      expert-happiness status --app <id or bundle ID> [--report <name contains>]
+      expert-happiness status --app <id or bundle ID> [--report <name contains>] [--summary-config <file>]
 
-    Lists each request, then the reports `download` would fetch with their
-    daily instance count and latest processing date. Pass --report to see any
-    other report by name.
+    Lists each request and its reports. With --report or --summary-config,
+    shows only the selected reports, with their daily instance count and
+    latest processing date. Without either, lists every report name.
     """
 
   private let config: CLIConfiguration
@@ -63,7 +63,14 @@ internal struct StatusCommand: ExpertHappinessCommand {
       print("\(request.accessType?.rawValue ?? "?") request \(request.id)\(stopped)")
       let reports = try await service.reports(requestID: request.id)
       print("  \(reports.count) reports available")
-      for report in reports where ReportSelection.includes(report, filter: config.report) {
+      for report in reports {
+        guard let selected = ReportSelection.includes(report, config: config) else {
+          print("  - \(report.name)")
+          continue
+        }
+        guard selected else {
+          continue
+        }
         let line: String
         do {
           let instances = try await service.instances(reportID: report.id)

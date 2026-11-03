@@ -30,13 +30,14 @@
 internal import ExpertHappiness
 internal import Foundation
 
-/// Picks the reports to fetch: the standard summary set, or those whose name
-/// contains `--report`.
+/// Picks the reports to fetch: those whose name contains `--report`, or
+/// those the summary configuration uses.
 internal enum ReportSelection {
-  internal static func includes(_ report: ReportSummary, filter: String?) -> Bool {
-    if let filter, !filter.isEmpty {
+  /// Whether a report is selected, or `nil` when nothing selects reports.
+  internal static func includes(_ report: ReportSummary, config: CLIConfiguration) -> Bool? {
+    if let filter = config.report, !filter.isEmpty {
       return report.name.localizedCaseInsensitiveContains(filter)
     }
-    return SummarySpec.standard.contains { $0.matches(reportName: report.name) }
+    return config.summaries?.includes(reportName: report.name)
   }
 }

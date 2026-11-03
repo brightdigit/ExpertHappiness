@@ -81,7 +81,13 @@ internal struct ReportTests {
   internal func summarizes() throws {
     let files = try Self.restatedFiles()
     let table = ReportArchive.deduplicated(files, from: "2026-10-01", to: "2026-10-02")
-    let spec = try #require(SummarySpec.standard.first)
+    let spec = SummarySpec(
+      title: "Impressions and page views by source",
+      reportNameContains: "Discovery and Engagement",
+      reportNameExcludes: "Detailed",
+      groupBy: ["Event", "Source Type"],
+      values: ["Counts", "Unique Counts"]
+    )
     #expect(spec.matches(reportName: "App Store Discovery and Engagement Standard"))
     #expect(!spec.matches(reportName: "App Store Discovery and Engagement Detailed"))
 

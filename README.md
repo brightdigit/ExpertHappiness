@@ -40,6 +40,7 @@ It's built the same way as [MistKit](https://github.com/brightdigit/MistKit). Th
    | `ASC_PRIVATE_KEY_PATH` | `--asc-private-key-path` | Fallback: a path to the `.p8`. If both are set, `ASC_PRIVATE_KEY` wins. |
    | `ASC_APP` | `--app` | An app ID or bundle ID |
    | `ASC_REPORTS_DIR` | `--output` | Where downloads go. Defaults to `./Reports`, which git ignores. |
+   | `ASC_SUMMARY_CONFIG` | `--summary-config` | A JSON file of summaries (see below). Picks the reports `download` fetches and how `summary` totals them. |
    | | `--env-file` | Defaults to `./.env` |
 
    Never commit a key. `.gitignore` excludes `.env`, `.env.*` (except `.env.example`), `*.p8` and `/Keys/`.
@@ -51,14 +52,48 @@ swift run expert-happiness apps                                    # check the k
 swift run expert-happiness request --app com.example.App          # ONGOING + ONE_TIME_SNAPSHOT; safe to rerun
 # wait 1–2 days for the first reports
 swift run expert-happiness status   --app com.example.App
-swift run expert-happiness download --app com.example.App --from 2026-09-27 --to 2026-11-02
-swift run expert-happiness summary  --app com.example.App --from 2026-09-27 --to 2026-11-02
+swift run expert-happiness download --app com.example.App --from 2026-09-27 --to 2026-11-02 --summary-config summaries.json
+swift run expert-happiness summary  --app com.example.App --from 2026-09-27 --to 2026-11-02 --summary-config summaries.json
 ```
 
 - `download` saves `Reports/<bundle ID>/<report>/<processing date>-<segment>.tsv`. It fetches processing dates through `--to` plus 5 days, because Apple sometimes restates a day after the fact. Files already on disk are skipped.
 - `summary` works offline from those files. It counts each restated day once, using the latest processing date. "Unique Counts" are summed per day, so across a range they overstate unique devices.
 - `finance` downloads monthly finance reports (Admin or Finance key, plus `ASC_VENDOR_NUMBER`) to `Reports/finance/<yyyy-MM>.tsv` and prints proceeds per month, product and currency. With no flags it covers the last 12 complete months, and months already on disk aren't downloaded again.
-- Add `--report "<name contains>"` to `status` or `download` to work with a report outside the standard set.
+- `download` needs either `--summary-config` or `--report "<name contains>"`, because each app has well over 100 reports. `status` without either lists every report name.
+- Without `--summary-config`, `summary` prints one table per downloaded report, totaling every numeric column except dates and IDs.
+
+### Summary configuration
+
+A summary file lists the tables you want. Only `title` and `reportNameContains` are required.
+
+```json
+{
+  "summaries": [
+    {
+      "title": "Impressions and page views by source",
+      "reportNameContains": "Discovery and Engagement",
+      "reportNameExcludes": "Detailed",
+      "groupBy": ["Event", "Source Type"],
+      "values": ["Counts", "Unique Counts"]
+    },
+    {
+      "title": "Subscription states (latest day in range)",
+      "reportNameContains": "Subscription State",
+      "groupBy": ["State Metric"],
+      "latestDateOnly": true
+    }
+  ]
+}
+```
+
+| Field | Meaning |
+|---|---|
+| `title` | The table heading. |
+| `reportNameContains` | Text the report name must contain, ignoring case. Run `status` to see the names. |
+| `reportNameExcludes` | Text the report name must not contain, e.g. `"Detailed"` to keep only the Standard report. |
+| `groupBy` | Columns to group rows by. Missing columns are listed under the table, not guessed. |
+| `values` | Columns to sum. Leave it out to sum every numeric column except dates and IDs. |
+| `latestDateOnly` | Total only the latest day in the range. Use this for point-in-time counts like subscription states. |
 
 ## Development
 
