@@ -33,15 +33,26 @@ internal import OpenAPIRuntime
 
 extension AnalyticsService {
   /// Lists the reports under a request, optionally narrowed by category.
+  ///
+  /// Without a category, this queries each known ``ReportCategory`` in turn.
+  /// Apple returns categories its published spec doesn't list yet (for
+  /// example `AD_ATTRIBUTION_KIT_ANALYTICS`), which the generated decoder
+  /// rejects, so the unfiltered list can't be decoded.
   public func reports(
     requestID: String,
     category: ReportCategory? = nil
   ) async throws -> [ReportSummary] {
-    try await perform { client in
-      let categoryFilter = category.flatMap {
-        Operations.analyticsReportRequests_reports_getToManyRelated.Input.Query
-          .filter_lbrack_category_rbrack_PayloadPayload(rawValue: $0.rawValue)
+    guard let category else {
+      var all: [ReportSummary] = []
+      for known in ReportCategory.allCases {
+        all += try await reports(requestID: requestID, category: known)
       }
+      return all
+    }
+    return try await perform { client in
+      let categoryFilter =
+        Operations.analyticsReportRequests_reports_getToManyRelated.Input.Query
+        .filter_lbrack_category_rbrack_PayloadPayload(rawValue: category.rawValue)
       let output = try await client.analyticsReportRequests_reports_getToManyRelated(
         .init(
           path: .init(id: requestID),
