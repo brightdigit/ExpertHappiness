@@ -1,0 +1,30 @@
+name: Check generated OpenAPI output
+
+on:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  regenerate-and-diff:
+    name: Regenerate Sources/AppStoreConnectOpenAPI and diff
+    runs-on: ubuntu-latest
+    container:
+      image: swift:6.4-noble
+    steps:
+      - uses: actions/checkout@v6
+      # Builds the generator pinned in Scripts/OpenAPITools/Package.swift
+      # (kept in sync with mise.toml), since mise isn't installed here.
+      - name: Regenerate OpenAPI code
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          ./Scripts/generate-openapi.sh
+      - name: Fail if the committed output does not match
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code -- Sources/AppStoreConnectOpenAPI/

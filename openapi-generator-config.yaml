@@ -1,0 +1,18 @@
+generate:
+  - types
+  - client
+accessModifier: public
+additionalFileComments:
+  - periphery:ignore:all
+  - swift-format-ignore-file
+# Apple's spec has 1,001 paths. Generate only the operations the Analytics
+# Reports workflow needs; add an operationId here to expose another endpoint.
+filter:
+  operations:
+    - apps_getCollection
+    - apps_analyticsReportRequests_getToManyRelated
+    - analyticsReportRequests_createInstance
+    - analyticsReportRequests_getInstance
+    - analyticsReportRequests_reports_getToManyRelated
+    - analyticsReports_instances_getToManyRelated
+    - analyticsReportInstances_segments_getToManyRelated
