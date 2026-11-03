@@ -53,6 +53,37 @@ internal struct FinanceSummaryTests {
     return rows.map { $0.joined(separator: "\t") }.joined(separator: "\n")
   }()
 
+  /// The layout of a real FINANCE_DETAIL file: preamble, header, rows, then a
+  /// per-country summary with its own header and no blank line between.
+  private static let financeDetail: String = {
+    let rows = [
+      ["Vendor Name", "EXAMPLE LLC"],
+      ["Start Date", "02/01/2026"],
+      ["End Date", "02/28/2026"],
+      [
+        "Transaction Date", "Settlement Date", "Apple Identifier", "SKU", "Title",
+        "Developer Name", "Product Type Identifier", "Country of Sale", "Quantity",
+        "Partner Share", "Extended Partner Share", "Partner Share Currency",
+      ],
+      [
+        "02/10/2026", "02/14/2026", "1", "pro.monthly", "Pro Monthly", "", "IAY", "US", "1", "9.34",
+        "9.34", "USD",
+      ],
+      [
+        "02/11/2026", "02/12/2026", "1", "pro.monthly", "Pro Monthly", "", "IAY", "US", "1", "9.34",
+        "9.34", "USD",
+      ],
+      [
+        "02/16/2026", "02/17/2026", "2", "pro.yearly", "Pro Yearly", "", "IAY", "SE", "1", "98.60",
+        "98.60", "SEK",
+      ],
+      ["Country Of Sale", "Partner Share Currency", "Quantity", "Extended Partner Share"],
+      ["US", "USD", "2", "18.68"],
+      ["SE", "SEK", "1", "98.60"],
+    ]
+    return rows.map { $0.joined(separator: "\t") }.joined(separator: "\n")
+  }()
+
   @Test("Nets returns and splits by currency, ignoring footer rows")
   internal func netsReturnsByCurrency() {
     let summary = FinanceSummary(reports: ["2026-10": ReportTable(text: Self.report)])
@@ -65,5 +96,36 @@ internal struct FinanceSummaryTests {
     #expect(usd.currency == "USD")
     #expect(usd.units == 1)
     #expect(usd.proceeds == Decimal(string: "9.34"))
+  }
+
+  @Test("Skips the finance report preamble and per-country summary")
+  internal func parsesFinanceDetailLayout() {
+    let table = ReportTable(financeReport: Self.financeDetail)
+    #expect(table.columns.first == "Transaction Date")
+    let summary = FinanceSummary(reports: ["2026-05": table])
+    #expect(summary.lines.count == 2)
+    #expect(summary.lines[0].product == "Pro Monthly")
+    #expect(summary.lines[0].units == 2)
+    #expect(summary.lines[0].proceeds == Decimal(string: "18.68"))
+    #expect(summary.lines[1].product == "Pro Yearly")
+    #expect(summary.lines[1].currency == "SEK")
+  }
+
+  @Test("Calendar months map to Apple's fiscal months")
+  internal func fiscalMonths() {
+    #expect(FiscalMonth(calendarMonth: "2026-10")?.reportDate == "2027-01")
+    #expect(FiscalMonth(calendarMonth: "2026-12")?.reportDate == "2027-03")
+    #expect(FiscalMonth(calendarMonth: "2026-01")?.reportDate == "2026-04")
+    #expect(FiscalMonth(calendarMonth: "2026-09")?.reportDate == "2026-12")
+    #expect(FiscalMonth(calendarMonth: "2026-13") == nil)
+    #expect(FiscalMonth(calendarMonth: "October") == nil)
+  }
+
+  @Test("Reads the report period from the preamble")
+  internal func reportPeriod() {
+    let period = FinanceReportPeriod(financeReport: Self.financeDetail)
+    #expect(period?.start == "02/01/2026")
+    #expect(period?.end == "02/28/2026")
+    #expect(FinanceReportPeriod(financeReport: Self.report) == nil)
   }
 }

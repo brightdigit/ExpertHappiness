@@ -40,7 +40,7 @@ extension AnalyticsService {
   ///
   /// - Parameters:
   ///   - vendorNumber: The vendor number shown in Payments and Financial Reports.
-  ///   - month: Apple's fiscal month as `yyyy-MM`.
+  ///   - month: Apple's fiscal month as `yyyy-MM` (see ``FiscalMonth``).
   ///   - type: Which report to fetch.
   /// - Returns: The report text, or `nil` when Apple has no report for that
   ///   month (it answers 404, for example for a month with no sales).

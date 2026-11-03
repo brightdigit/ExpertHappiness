@@ -33,7 +33,7 @@ public import Foundation
 public struct FinanceSummary: Sendable {
   /// One month's proceeds for one product in one currency.
   public struct Line: Sendable, Equatable {
-    /// The fiscal month, `yyyy-MM`.
+    /// The month the report is keyed by, `yyyy-MM`.
     public let month: String
     /// The product's title, or its vendor identifier when there's no title.
     public let product: String

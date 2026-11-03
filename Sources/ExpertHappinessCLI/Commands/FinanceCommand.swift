@@ -42,16 +42,21 @@ internal struct FinanceCommand: ExpertHappinessCommand {
 
     OPTIONS:
       --vendor <number>       Vendor number, or ASC_VENDOR_NUMBER
-      --from-month <yyyy-MM>  First fiscal month (default: 11 before --to-month)
-      --to-month <yyyy-MM>    Last fiscal month (default: last month)
+      --from-month <yyyy-MM>  First calendar month (default: 11 before --to-month)
+      --to-month <yyyy-MM>    Last calendar month (default: last month)
       --output <dir>          Where reports are saved (default: Reports)
 
     The vendor number is shown at the top of Payments and Financial Reports.
 
-    Saves each month's FINANCE_DETAIL report to <output>/finance/<yyyy-MM>.tsv,
-    skipping months already on disk, then prints proceeds per month, product
-    and currency as Markdown. Months Apple hasn't published are listed, not
-    treated as errors.
+    Months are calendar months. Apple files finance reports by fiscal month,
+    and its fiscal year starts in late September, so October 2026 is fiscal
+    2027-01. Fiscal months end on a Saturday, so each one's real dates are
+    printed in the Period column.
+
+    Saves each month's FINANCE_DETAIL report to <output>/finance/<fiscal>.tsv,
+    named by fiscal month and skipping months already on disk, then prints
+    proceeds per month, product and currency as Markdown. Months Apple hasn't
+    published are listed, not treated as errors.
 
     Finance reports need a key with the Admin or Finance role.
     """
@@ -62,17 +67,42 @@ internal struct FinanceCommand: ExpertHappinessCommand {
     self.config = config
   }
 
-  private static func markdown(_ summary: FinanceSummary) -> String {
+  private static func markdown(
+    _ summary: FinanceSummary,
+    periods: [String: FinanceReportPeriod]
+  ) -> String {
     var lines = [
-      "| Month | Product | Currency | Units | Proceeds |",
-      "|---|---|---|---:|---:|",
+      "| Month | Period | Product | Currency | Units | Proceeds |",
+      "|---|---|---|---|---:|---:|",
     ]
     for line in summary.lines {
+      let period = periods[line.month].map { "\($0.start)–\($0.end)" } ?? ""
       lines.append(
-        "| \(line.month) | \(line.product) | \(line.currency) | \(line.units) | \(line.proceeds) |"
+        "| \(line.month) | \(period) | \(line.product) | \(line.currency) | \(line.units) "
+          + "| \(line.proceeds) |"
       )
     }
     return lines.joined(separator: "\n")
+  }
+
+  /// Reads a cached report, or downloads and caches it.
+  private static func report(
+    at file: URL,
+    fiscal: FiscalMonth,
+    vendorNumber: String,
+    service: AnalyticsService
+  ) async throws -> String? {
+    if FileManager.default.fileExists(atPath: file.path) {
+      return try String(contentsOf: file, encoding: .utf8)
+    }
+    let text = try await service.financeReport(
+      vendorNumber: vendorNumber,
+      month: fiscal.reportDate
+    )
+    if let text {
+      try text.write(to: file, atomically: true, encoding: .utf8)
+    }
+    return text
   }
 
   internal func execute() async throws {
@@ -87,25 +117,26 @@ internal struct FinanceCommand: ExpertHappinessCommand {
     let service = try config.makeService()
 
     var reports: [String: ReportTable] = [:]
+    var periods: [String: FinanceReportPeriod] = [:]
     var missing: [String] = []
     for month in range.months {
-      let file = directory.appendingPathComponent("\(month).tsv")
-      let text: String?
-      if FileManager.default.fileExists(atPath: file.path) {
-        text = try String(contentsOf: file, encoding: .utf8)
-      } else {
-        text = try await service.financeReport(vendorNumber: vendorNumber, month: month)
-        if let text {
-          try text.write(to: file, atomically: true, encoding: .utf8)
-        }
+      guard let fiscal = FiscalMonth(calendarMonth: month) else {
+        throw CLIError.invalid("\(month) isn't a yyyy-MM month")
       }
-      if let text {
-        reports[month] = ReportTable(text: text)
+      let file = directory.appendingPathComponent("\(fiscal.reportDate).tsv")
+      if let text = try await Self.report(
+        at: file,
+        fiscal: fiscal,
+        vendorNumber: vendorNumber,
+        service: service
+      ) {
+        reports[month] = ReportTable(financeReport: text)
+        periods[month] = FinanceReportPeriod(financeReport: text)
       } else {
-        missing.append(month)
+        missing.append("\(month) (fiscal \(fiscal.reportDate))")
       }
     }
-    print(Self.markdown(FinanceSummary(reports: reports)))
+    print(Self.markdown(FinanceSummary(reports: reports), periods: periods))
     if !missing.isEmpty {
       print("\nNo report from Apple for: \(missing.joined(separator: ", "))")
     }
